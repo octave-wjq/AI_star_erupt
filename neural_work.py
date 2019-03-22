@@ -1,5 +1,4 @@
 
-
 # -*- coding: utf-8 -*-
 
 import numpy as np                                  #引用numpy库，用np表示，方便矩阵运算
@@ -78,21 +77,47 @@ def backprop(params, input_size, hidden_size, num_labels, X, y,learning_rate): #
     
     return J, grad
 
+def into_10(y):
+    i = y.shape[0]
+    for i in range(0,i):
+        if(y[i,0] < 6):
+            y[i,0] = 1
+        else:
+            y[i,0] = 0
+
+
+
+
+def compare(x,y):
+    if(x < 6 and y < 6):
+        return True
+    elif (x > 5 and y > 5):
+        return True
+    else:
+        return False
+
 from scipy.optimize import minimize
 
 # initial setup
-data = loadmat('ex4data1.mat') #字典形式的数据结构
-X = data['X']
-y = data['y']
+
+# import mat4py
+
+data = loadmat('D:\python\AI\AI_star_erupt\data1.mat') #字典形式的数据结构
+X = data['X_run']
+y = data['y_run']
+# into_10(y)
+
+
+
 
 from sklearn.preprocessing import OneHotEncoder
 encoder = OneHotEncoder(sparse=False)
 y_onehot = encoder.fit_transform(y) # 将y转为y_onehot，每组数据中概率最大的为1，其余为0，5000*10
 
-input_size = 400 #输入层变量个数400
+input_size = 1600 #输入层变量个数1600
 hidden_size = 25 #隐藏层变量个数为25
-num_labels = 10  #输出层10个代表分别为1到10的概率
-learning_rate = 1#正则化的系数
+num_labels = 2  #输出层8个代表分别为1到8的概率
+learning_rate = 100000#正则化的系数
 
 # randomly initialize a parameter array of the size of the full network's parameters
 params = (np.random.random(size=hidden_size * (input_size + 1) + num_labels * (hidden_size + 1)) - 0.5) * 0.25#随机给的初始参数theta1和theta2，现在为一个行向量，用时再按维数合成矩阵
@@ -108,8 +133,15 @@ fmin = minimize(fun=backprop, x0=params, args=(input_size, hidden_size, num_labe
 theta1 = np.matrix(np.reshape(fmin.x[:hidden_size * (input_size + 1)], ((input_size + 1),hidden_size ))) #优化得到的行向量按维数合成theta1和theta2
 theta2 = np.matrix(np.reshape(fmin.x[hidden_size * (input_size + 1):], ((hidden_size + 1),num_labels )))
 
+data = loadmat('D:\python\AI\AI_star_erupt\data2.mat') #字典形式的数据结构
+X = data['X_test']    #测试集
+y = data['y_test']
+# into_10(y)
+
 a1, z2, a2, z3, h = forward_propagate(X, theta1, theta2)#最优的theta1和theta2正向传播一次，看看预测下效果
-y_pred = np.array(np.argmax(h, axis=1) + 1)#因为h索引从0开始，需要加1，得到y_pred为我们的预测结果
+y_pred = np.array(np.argmax(h, axis=1)  )#因为h索引从0开始，需要加1，得到y_pred为我们的预测结果
+
+
 
 correct = [1 if a == b else 0 for (a, b) in zip(y_pred, y)]#比较预测和实际的结果。正确为1，错误为0
 accuracy = (sum(map(int, correct)) / float(len(correct)))#累加求和，除以总个数，得到正确率
